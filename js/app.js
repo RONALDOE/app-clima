@@ -1,11 +1,10 @@
-// 1. Constantes y Variables
-const apiKey = 'da336be6c68e6350b390be82950bab5d'; // Tu llave confirmada
+const apiKey = 'da336be6c68e6350b390be82950bab5d'; 
 const btnBuscar = document.getElementById('buscar');
 const inputCiudad = document.getElementById('ciudad');
 const divResultado = document.getElementById('resultado');
 const links = document.querySelectorAll('.scroll-link');
 
-// 2. Lógica del Scroll Suave (Requisito de rúbrica)
+// Scroll suave para la navegación
 links.forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -15,19 +14,19 @@ links.forEach(link => {
     });
 });
 
-// 3. Función de Datos de Prueba (Mock)
+// Datos de respaldo si falla la API
 const usarMock = (ciudad) => {
-    console.warn("Usando datos de prueba (Mock) - API inactiva o fallando");
+    console.warn("Error con la API. Cargando datos locales.");
     const dataMock = {
-        name: ciudad ,
+        name: ciudad,
         main: { temp: 28, feels_like: 30, humidity: 75 },
-        weather: [{ description: "soleado", icon: "01d" }],
+        weather: [{ main: 'Clear', description: "soleado", icon: "01d" }],
         wind: { speed: 4.5 }
     };
     mostrarClima(dataMock);
 };
 
-// 4. Petición a la API (Arrow Function + Async/Await)
+// Fetch a la API de OpenWeather
 const obtenerClima = async (ciudad) => {
     try {
         const url = `https://api.openweathermap.org/data/2.5/weather?q=${ciudad}&appid=${apiKey}&units=metric&lang=es`;
@@ -35,22 +34,34 @@ const obtenerClima = async (ciudad) => {
         const data = await respuesta.json();
 
         if (data.cod === 200) {
-            mostrarClima(data); // Si funciona, muestra datos reales
+            mostrarClima(data); 
         } else {
-            usarMock(ciudad); // Si falla, usa el mock
+            usarMock(ciudad); 
         }
     } catch (error) {
-        usarMock(ciudad); // Si no hay internet, usa el mock
+        usarMock(ciudad); 
     }
 };
 
-// 5. Manipulación del DOM (Dashboard y Clima)
+// Inyección en el DOM y cambio de fondos
 const mostrarClima = (data) => {
-    // Destructuración de datos
     const { name, main: { temp, feels_like, humidity }, weather, wind: { speed } } = data;
     const icono = `https://openweathermap.org/img/wn/${weather[0].icon}@2x.png`;
+    const condicionPrincipal = weather[0].main; 
 
-    // Inyección de HTML
+    const seccionClima = document.getElementById('app-clima');
+    seccionClima.className = ''; 
+
+    switch (condicionPrincipal) {
+        case 'Clear': seccionClima.classList.add('fondo-soleado'); break;
+        case 'Rain':
+        case 'Drizzle':
+        case 'Thunderstorm': seccionClima.classList.add('fondo-lluvioso'); break;
+        case 'Clouds': seccionClima.classList.add('fondo-nublado'); break;
+        case 'Snow': seccionClima.classList.add('fondo-nieve'); break;
+        default: seccionClima.classList.add('fondo-default'); break;
+    }
+
     divResultado.innerHTML = `
         <div class="clima-principal">
             <h3>${name}</h3>
@@ -76,7 +87,7 @@ const mostrarClima = (data) => {
     `;
 };
 
-// 6. Manejo de Eventos
+// Event Listeners
 btnBuscar.addEventListener('click', () => {
     const ciudad = inputCiudad.value.trim();
     if (ciudad) obtenerClima(ciudad);
