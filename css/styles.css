@@ -1,8 +1,8 @@
-/* Reset y Mobile First */
+/* --- 1. Reset y Base --- */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Arial, sans-serif; text-align: center; }
 
-/* Menú Sticky */
+/* --- 2. Menú Sticky --- */
 header {
     position: sticky;
     top: 0;
@@ -12,7 +12,7 @@ header {
 }
 
 nav ul {
-    display: flex; /* Uso de Flexbox */
+    display: flex;
     justify-content: center;
     gap: 20px;
     list-style: none;
@@ -24,7 +24,7 @@ nav a {
     font-weight: bold;
 }
 
-/* Secciones Full Screen */
+/* --- 3. Secciones Generales --- */
 section {
     min-height: 100vh;
     display: flex;
@@ -37,12 +37,72 @@ section {
 #inicio { background-color: #f4f4f4; }
 #app-clima { background-color: #e3f2fd; }
 
-/* Uso de Grid para pantallas grandes (Media Query) */
-@media (min-width: 768px) {
-    .clima-container {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 15px;
-        width: 400px;
-    }
+/* --- 4. Contenedor de Búsqueda --- */
+.clima-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+    margin-top: 20px;
 }
+
+input, button {
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* --- 5. Estilos del Dashboard Inyectado por JS --- */
+.clima-principal {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+}
+
+.temperatura {
+    font-size: 3rem;
+    color: #007BFF;
+    margin: 10px 0;
+}
+
+.descripcion {
+    font-weight: bold;
+    color: #555;
+}
+
+/* Grid para las tarjetas pequeñas */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.tarjeta {
+    background-color: white;
+    padding: 15px 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.9rem;
+}
+
+.tarjeta span { color: #666; }
+.tarjeta strong { font-size: 1.1rem; color: #333; }

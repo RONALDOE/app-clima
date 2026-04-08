@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App del clima</title>
+    <title>App del Clima</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 
@@ -19,16 +19,32 @@
     </header>
 
     <main>
+        <section id="inicio">
+            <h1>Descubre el Clima al Instante 🌦️</h1>
+            <p>Navega hacia abajo para usar la app.</p>
+        </section>
+
         <section id="app-clima">
             <h2>Consulta una Ciudad</h2>
             <div class="clima-container">
-                <input type="text" id="ciudad" placeholder="Ej: Santo Domingo">
+
+                <input type="text" id="ciudad" list="lista-ciudades" placeholder="Ej: Santo Domingo">
+                <datalist id="lista-ciudades">
+                    <option value="Santo Domingo"></option>
+                    <option value="Santiago"></option>
+                    <option value="Punta Cana"></option>
+                    <option value="Madrid"></option>
+                    <option value="Nueva York"></option>
+                    <option value="Tokio"></option>
+                </datalist>
+
                 <button id="buscar">Buscar</button>
-                <div id="resultado">
-                </div>
+
+                <div id="resultado"></div>
             </div>
         </section>
     </main>
+
     <script src="js/app.js"></script>
 </body>
 
