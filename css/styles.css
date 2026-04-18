@@ -1,130 +1,305 @@
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: Arial, sans-serif; text-align: center; }
-
-
-header {
-    position: sticky;
-    top: 0;
-    background-color: #007BFF;
-    padding: 1rem;
-    z-index: 100;
+/* --- 1. VARIABLES Y CONFIGURACIÓN BASE --- */
+:root {
+    --primary: #007BFF;
+    --text-color: #ffffff; 
+    --card-bg: rgba(255, 255, 255, 0.12);
+    --card-border: rgba(255, 255, 255, 0.2);
+    --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
-nav ul {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    list-style: none;
+body.dark-mode {
+    --primary: #3b82f6;
+    --card-bg: rgba(15, 23, 42, 0.5);
+    --card-border: rgba(255, 255, 255, 0.1);
 }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
 }
 
-section {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
+html {
+    scroll-behavior: smooth;
 }
 
-#inicio { background-color: #f4f4f4; }
-#app-clima { background-color: #e3f2fd; }
+body { 
+    font-family: 'Poppins', sans-serif; 
+    color: var(--text-color); 
+    transition: all 0.4s ease; 
+    overflow-x: hidden;
+    
+    /* FONDO DEL CIELO CON FILTRO DE CONTRASTE */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.25)), 
+                      url('https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
 
+body.dark-mode {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                      url('https://images.unsplash.com/photo-1506318137071-a8e063b4bc09?auto=format&fit=crop&w=1920&q=80');
+}
 
-.clima-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+/* --- 2. NAVEGACIÓN (GLASS) --- */
+header { 
+    position: fixed; 
     width: 100%;
-    max-width: 400px;
-    margin-top: 20px;
+    top: 0; 
+    background-color: rgba(0, 0, 0, 0.2); 
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px);
+    z-index: 1000; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-input, button {
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-button {
-    background-color: #007BFF;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    border: none;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-.clima-principal {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    margin-bottom: 15px;
-}
-
-.temperatura {
-    font-size: 3rem;
-    color: #007BFF;
-    margin: 10px 0;
-}
-
-.descripcion {
-    font-weight: bold;
-    color: #555;
-}
-
-.dashboard {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.tarjeta {
-    background-color: white;
-    padding: 15px 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.8rem 2rem;
     display: flex;
-    flex-direction: column;
-    gap: 5px;
-    font-size: 0.9rem;
+    justify-content: space-between;
+    align-items: center;
 }
 
-.tarjeta span { color: #666; }
-.tarjeta strong { font-size: 1.1rem; color: #333; }
+.logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -1px; }
+.logo span { color: var(--primary); }
 
+nav ul { display: flex; align-items: center; gap: 25px; list-style: none; }
+nav a { color: white; text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: 0.3s; }
+nav a:hover { color: var(--primary); }
 
-#app-clima {
-    transition: background 0.5s ease; 
+.btn-nav-cta { 
+    background: var(--primary); 
+    padding: 10px 22px; 
+    border-radius: 25px; 
+    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
 }
 
-.fondo-soleado {
-    background: linear-gradient(to bottom, #fceabb, #f8b500); 
+.btn-oscuro { background: none; border: none; font-size: 1.2rem; cursor: pointer; transition: transform 0.3s; }
+.btn-oscuro:hover { transform: rotate(20deg); }
+
+/* --- 3. HERO SECTION (PORTADA) --- */
+section { 
+    padding: 100px 20px; 
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
 }
 
-.fondo-lluvioso {
-    background: linear-gradient(to bottom, #2b5876, #4e4376); 
+.hero-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-direction: row;
+    gap: 60px;
+    display: flex;
 }
 
-.fondo-nublado {
-    background: linear-gradient(to bottom, #8e9eab, #eef2f3); 
+.hero-content { flex: 1.2; text-align: left; animation: aparecerIzquierda 1s ease-out; }
+.hero-content h1 { font-size: 4rem; line-height: 1.1; margin-bottom: 25px; font-weight: 800; }
+.highlight { color: var(--primary); }
+
+.hero-content p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 40px; line-height: 1.6; }
+
+.hero-botones { display: flex; gap: 20px; align-items: center; }
+.btn-hero-primary { 
+    background: var(--primary); 
+    color: white; 
+    padding: 16px 35px; 
+    border-radius: 35px; 
+    text-decoration: none; 
+    font-weight: bold; 
+    box-shadow: 0 10px 25px rgba(0,123,255,0.4); 
+    transition: 0.3s;
+}
+.btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,123,255,0.5); }
+
+.btn-hero-secondary { 
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.4); 
+    color: white; 
+    padding: 16px 35px; 
+    border-radius: 35px; 
+    text-decoration: none; 
+    font-weight: bold; 
+    transition: 0.3s;
+}
+.btn-hero-secondary:hover { background: rgba(255, 255, 255, 0.2); border-color: white; }
+
+.hero-visual { flex: 0.8; display: flex; justify-content: center; align-items: center; animation: aparecerDerecha 1s ease-out; }
+
+.mockup-flotante { 
+    padding: 40px; 
+    text-align: center; 
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 30px;
+    box-shadow: var(--shadow);
+    animation: flotar 4s ease-in-out infinite; 
 }
 
-.fondo-nieve {
-    background: linear-gradient(to bottom, #E0EAFC, #CFDEF3); 
+.mockup-flotante h2 { font-size: 3.5rem; margin-bottom: 10px; }
+
+/* --- 4. FEATURES (REVEAL ANIMATION) --- */
+.features-section { background: rgba(0, 0, 0, 0.1); backdrop-filter: blur(10px); }
+.seccion-titulo { text-align: center; margin-bottom: 70px; }
+.seccion-titulo h2 { font-size: 3rem; font-weight: 800; margin-bottom: 15px; }
+
+.features-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 30px; 
+    max-width: 1200px; 
+    width: 100%;
+    margin: 0 auto;
 }
 
-.fondo-default {
-    background-color: #e3f2fd; 
+.feature-card { 
+    background: var(--card-bg); 
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--card-border); 
+    padding: 50px 30px; 
+    border-radius: 30px; 
+    text-align: center; 
+    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+}
+.feature-card:hover { transform: translateY(-15px); background: rgba(255,255,255,0.2); border-color: white; }
+.feature-icon { font-size: 3.8rem; margin-bottom: 25px; display: block; }
+
+/* --- 5. APP SECTION (DASHBOARD) --- */
+.app-section { background: rgba(0, 0, 0, 0.05); }
+.clima-container { width: 100%; max-width: 950px; margin: 0 auto; }
+
+.grupo-busqueda { 
+    display: flex; 
+    gap: 15px; 
+    margin-bottom: 25px; 
+    background: rgba(255,255,255,0.1); 
+    padding: 12px; 
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+input { 
+    flex-grow: 1; 
+    padding: 16px; 
+    border-radius: 15px; 
+    border: none; 
+    background: white; 
+    color: #333; 
+    font-family: 'Poppins'; 
+    font-size: 1rem;
+}
+
+#btn-gps { 
+    background: white; 
+    border: none; 
+    padding: 0 20px; 
+    border-radius: 15px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    color: var(--primary);
+}
+
+.btn-principal { 
+    background: var(--primary); 
+    color: white; 
+    padding: 16px 35px; 
+    border-radius: 15px; 
+    border: none; 
+    font-weight: 800; 
+    cursor: pointer; 
+    transition: 0.3s;
+}
+.btn-principal:hover { filter: brightness(1.1); }
+
+/* Chips Historial */
+.historial-container { margin-bottom: 20px; }
+.chip { 
+    background: rgba(255,255,255,0.15); 
+    padding: 8px 18px; 
+    border-radius: 25px; 
+    font-size: 0.9rem; 
+    cursor: pointer; 
+    border: 1px solid var(--card-border);
+    transition: 0.3s;
+}
+.chip:hover { background: white; color: var(--primary); }
+
+/* Dashboard 3 Columnas Pro */
+.dashboard-pro { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 25px; 
+    margin-top: 40px; 
+    text-align: left;
+}
+
+@media (min-width: 900px) { 
+    .dashboard-pro { grid-template-columns: 1fr 1fr 1.5fr; } 
+}
+
+.panel-glass { 
+    background: var(--card-bg); 
+    backdrop-filter: blur(20px); 
+    border: 1px solid var(--card-border); 
+    border-radius: 25px; 
+    padding: 30px; 
+    box-shadow: var(--shadow); 
+}
+
+.temp-gigante { color: var(--primary); font-weight: 800; }
+body.dark-mode .temp-gigante { color: white; }
+
+/* --- 6. FOOTER --- */
+footer { 
+    background: rgba(0, 0, 0, 0.85); 
+    backdrop-filter: blur(15px);
+    padding: 100px 20px 40px; 
+}
+.footer-grid { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+    gap: 60px; 
+}
+.footer-bottom { 
+    margin-top: 60px; 
+    padding-top: 30px; 
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.1); 
+    opacity: 0.5; 
+}
+
+/* --- 7. ANIMACIONES --- */
+@keyframes flotar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+@keyframes aparecerIzquierda { from { opacity: 0; transform: translateX(-50px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes aparecerDerecha { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes entrar { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+.animacion-aparecer { animation: entrar 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+
+.skeleton { 
+    background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%); 
+    background-size: 200% 100%; 
+    animation: loading 1.5s infinite; 
+    border-radius: 10px; 
+}
+@keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+/* Responsividad */
+@media (max-width: 900px) {
+    .hero-section { flex-direction: column; text-align: center; }
+    .hero-content { text-align: center; }
+    .hero-content h1 { font-size: 3rem; }
+    .hero-botones { justify-content: center; }
+    .hero-content p { margin: 0 auto 30px; }
+    nav ul { display: none; } /* Simplificación para móvil */
 }
