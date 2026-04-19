@@ -1,132 +1,147 @@
-<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="es">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClimaPro | El clima exacto en tus manos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
-
-<body>
-    <header>
-        <div class="nav-container">
-            <div class="logo">⛅ Clima<span>Pro</span></div>
-            <nav>
-                <ul>
-                    <li><a href="#inicio" class="scroll-link">Inicio</a></li>
-                    <li><a href="#caracteristicas" class="scroll-link">Características</a></li>
-                    <li><a href="#app-clima" class="scroll-link btn-nav-cta">Probar App</a></li>
-                    <li><button id="toggle-tema" class="btn-oscuro">🌙</button></li>
-                </ul>
-            </nav>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ClimaPro | Tu clima en tiempo real</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="logo">
+          <span class="logo-icon">⛅</span>
+          <span>ClimaPro</span>
         </div>
-    </header>
-
-    <main>
-        <section id="inicio" class="hero-section">
-            <div class="hero-content">
-                <h1>El clima exacto, <br><span class="highlight">sin complicaciones.</span></h1>
-                <p>Planifica tu día con precisión. Obtén pronósticos detallados, sensación térmica real y alertas en
-                    tiempo real para cualquier ciudad del mundo.</p>
-                <div class="hero-botones">
-                    <a href="#app-clima" class="scroll-link btn-hero-primary">Comenzar ahora</a>
-                    <a href="#caracteristicas" class="scroll-link btn-hero-secondary">Saber más</a>
-                </div>
-            </div>
-            <div class="hero-visual">
-                <div class="mockup-flotante glass-card">
-                    <h2>26°C</h2>
-                    <p>☀️ Soleado en Santo Domingo</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="caracteristicas" class="features-section">
-            <div class="seccion-titulo">
-                <h2>¿Por qué elegir ClimaPro?</h2>
-                <p>Diseñada para darte la mejor experiencia de usuario.</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">📍</div>
-                    <h3>Geolocalización</h3>
-                    <p>Detectamos tu ubicación al instante para darte el clima exacto de donde estás parado.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Datos en Tiempo Real</h3>
-                    <p>Información actualizada minuto a minuto gracias a nuestra potente API integrada.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎨</div>
-                    <h3>Diseño Premium</h3>
-                    <p>Modo oscuro, fondos dinámicos y una interfaz limpia libre de distracciones.</p>
-                </div>
-            </div>
-        </section>
-
-        <section id="app-clima" class="app-section">
-            <div class="seccion-titulo">
-                <h2>Pruébalo tú mismo</h2>
-                <p>Ingresa una ciudad o usa tu GPS para comenzar.</p>
-            </div>
-
-            <div class="clima-container">
-                <div class="grupo-busqueda">
-                    <button id="btn-gps" title="Usar mi ubicación">📍 GPS</button>
-                    <input type="text" id="ciudad" list="lista-ciudades" placeholder="Ej: Nueva York, Tokio...">
-                </div>
-
-                <datalist id="lista-ciudades">
-                    <option value="Santo Domingo"></option>
-                    <option value="Santiago"></option>
-                    <option value="Madrid"></option>
-                </datalist>
-
-                <button id="buscar" class="btn-principal">Consultar Clima</button>
-
-                <div class="historial-container">
-                    <div id="historial"></div>
-                </div>
-
-                <div id="resultado-wrapper"></div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="footer-grid">
-            <div>
-                <h3>⛅ ClimaPro</h3>
-                <p>La mejor app meteorológica creada para el proyecto final de Desarrollo Web.</p>
-            </div>
-            <div>
-                <h4>Enlaces</h4>
-                <ul>
-                    <li><a href="#">Sobre nosotros</a></li>
-                    <li><a href="#">API Documentation</a></li>
-                </ul>
-            </div>
-            <div>
-                <h4>Desarrolladores</h4>
-                <ul>
-                    <li>Yansell Rosario</li>
-                    <li>Ronaldo Suero</li>
-                    <li>Karla </li>
-                      <li>Wilkeni Solis </li>
-
-                </ul>
-            </div>
+        <div class="header-actions">
+          <button id="btn-unit" class="btn-icon" title="Cambiar unidad">
+            °C
+          </button>
+          <button id="btn-theme" class="btn-icon" title="Cambiar tema">
+            🌙
+          </button>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2026 ClimaPro. Todos los derechos reservados.</p>
+      </header>
+
+      <!-- Búsqueda -->
+      <section class="search-section">
+        <div class="search-box">
+          <button id="btn-gps" class="btn-gps" title="Usar mi ubicación">
+            📍
+          </button>
+          <input
+            type="text"
+            id="ciudad"
+            class="search-input"
+            placeholder="Buscar ciudad..."
+            autocomplete="off"
+          />
+          <button id="btn-buscar" class="btn-search">
+            <span>🔍</span> Buscar
+          </button>
         </div>
-    </footer>
+        <div id="historial" class="history-chips"></div>
+      </section>
+
+      <!-- Estado vacío -->
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">🌤️</div>
+        <h2 class="empty-title">¿Cómo está el clima hoy?</h2>
+        <p class="empty-text">
+          Ingresa el nombre de una ciudad o usa tu ubicación GPS para conocer el
+          pronóstico del tiempo.
+        </p>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="loading" style="display: none">
+        <div class="spinner"></div>
+        <p class="loading-text">Consultando el clima...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error" class="error-message" style="display: none"></div>
+
+      <!-- Resultado del clima -->
+      <div id="weather-display" class="weather-display">
+        <!-- Card Principal -->
+        <div class="weather-main">
+          <h1 id="location" class="weather-location">--</h1>
+          <p id="date" class="weather-date">--</p>
+          <div class="weather-temp-container">
+            <img
+              id="weather-icon"
+              class="weather-icon"
+              src="https://openweathermap.org/img/wn/02d@4x.png"
+              alt="Clima"
+            />
+            <div>
+              <div id="temp" class="weather-temp">
+                --<span class="unit">°C</span>
+              </div>
+            </div>
+          </div>
+          <p id="description" class="weather-desc">--</p>
+          <p id="feels-like" class="weather-feels">Sensación térmica: --</p>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="weather-stats">
+          <div class="stat-card">
+            <span class="stat-icon">💧</span>
+            <div id="humidity" class="stat-value">--%</div>
+            <div class="stat-label">Humedad</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">💨</span>
+            <div id="wind" class="stat-value">-- km/h</div>
+            <div class="stat-label">Viento</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">👁️</span>
+            <div id="visibility" class="stat-value">-- km</div>
+            <div class="stat-label">Visibilidad</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🌡️</span>
+            <div id="pressure" class="stat-value">-- hPa</div>
+            <div class="stat-label">Presión</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🌅</span>
+            <div id="sunrise" class="stat-value">--:--</div>
+            <div class="stat-label">Amanecer</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🌇</span>
+            <div id="sunset" class="stat-value">--:--</div>
+            <div class="stat-label">Atardecer</div>
+          </div>
+        </div>
+
+        <!-- Pronóstico -->
+        <div class="forecast-section">
+          <h3 class="forecast-title">📅 Próximos 5 días</h3>
+          <div id="forecast" class="forecast-grid"></div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <p class="footer-title">⛅ ClimaPro</p>
+        <p class="footer-devs">
+          Yansell Rosario • Ronaldo Suero • Karla • Wilkeni Solis
+        </p>
+        <p class="footer-copy">© 2026 Proyecto Final - Desarrollo Web</p>
+      </footer>
+    </div>
 
     <script src="js/app.js"></script>
-</body>
-
+  </body>
 </html>
+

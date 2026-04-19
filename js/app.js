@@ -1,168 +1,270 @@
-const inputCiudad = document.getElementById('ciudad');
-const btnBuscar = document.getElementById('buscar');
-const btnGps = document.getElementById('btn-gps');
-const divWrapper = document.getElementById('resultado-wrapper');
-const divHistorial = document.getElementById('historial');
-const btnTema = document.getElementById('toggle-tema');
+﻿// CLIMA PRO - App del Clima con API Real
 
-// --- 1. Modo Oscuro ---
-if (localStorage.getItem('temaOscuro') === 'true') {
-    document.body.classList.add('dark-mode');
+const API_KEY = '4d8fb5b93d4af21d66a2948710284366';
+const API_BASE = 'https://api.openweathermap.org/data/2.5';
+
+const elements = {
+  ciudad: document.getElementById('ciudad'),
+  btnBuscar: document.getElementById('btn-buscar'),
+  btnGps: document.getElementById('btn-gps'),
+  btnTheme: document.getElementById('btn-theme'),
+  btnUnit: document.getElementById('btn-unit'),
+  historial: document.getElementById('historial'),
+  emptyState: document.getElementById('empty-state'),
+  loading: document.getElementById('loading'),
+  error: document.getElementById('error'),
+  weatherDisplay: document.getElementById('weather-display'),
+  location: document.getElementById('location'),
+  date: document.getElementById('date'),
+  weatherIcon: document.getElementById('weather-icon'),
+  temp: document.getElementById('temp'),
+  description: document.getElementById('description'),
+  feelsLike: document.getElementById('feels-like'),
+  humidity: document.getElementById('humidity'),
+  wind: document.getElementById('wind'),
+  visibility: document.getElementById('visibility'),
+  pressure: document.getElementById('pressure'),
+  sunrise: document.getElementById('sunrise'),
+  sunset: document.getElementById('sunset'),
+  forecast: document.getElementById('forecast')
+};
+
+let state = {
+  unit: localStorage.getItem('unit') || 'metric',
+  theme: localStorage.getItem('theme') || 'light',
+  history: JSON.parse(localStorage.getItem('history')) || [],
+  lastData: null
+};
+
+function init() {
+  applyTheme();
+  updateUnitButton();
+  renderHistory();
+  setupEventListeners();
 }
 
-btnTema.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('temaOscuro', document.body.classList.contains('dark-mode'));
-});
+function applyTheme() {
+  document.body.classList.toggle('dark', state.theme === 'dark');
+  elements.btnTheme.textContent = state.theme === 'dark' ? String.fromCodePoint(0x2600, 0xFE0F) : String.fromCodePoint(0x1F319);
+}
 
-// --- 2. Historial Reparado ---
-let historial = JSON.parse(localStorage.getItem('ciudades')) || [];
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', state.theme);
+  applyTheme();
+}
 
-const renderizarHistorial = () => {
-    divHistorial.innerHTML = '';
-    // Agregamos un pequeño margen de seguridad para que no se peguen las palabras
-    divHistorial.style.display = 'flex';
-    divHistorial.style.gap = '10px'; 
-    divHistorial.style.flexWrap = 'wrap';
+function updateUnitButton() {
+  elements.btnUnit.textContent = state.unit === 'metric' ? String.fromCodePoint(0x00B0) + 'C' : String.fromCodePoint(0x00B0) + 'F';
+}
 
-    historial.forEach(ciudad => {
-        const chip = document.createElement('span');
-        chip.className = 'chip';
-        chip.textContent = ciudad;
-        chip.onclick = () => { inputCiudad.value = ciudad; ejecutarBusqueda(ciudad); };
-        divHistorial.appendChild(chip);
-    });
-};
+function toggleUnit() {
+  state.unit = state.unit === 'metric' ? 'imperial' : 'metric';
+  localStorage.setItem('unit', state.unit);
+  updateUnitButton();
+  if (state.lastData) fetchWeather(state.lastData.name);
+}
 
-const guardarHistorial = (ciudad) => {
-    if (!historial.includes(ciudad)) {
-        historial.unshift(ciudad);
-        if (historial.length > 3) historial.pop();
-        localStorage.setItem('ciudades', JSON.stringify(historial));
-        renderizarHistorial();
+function showLoading() {
+  elements.emptyState.style.display = 'none';
+  elements.weatherDisplay.classList.remove('visible');
+  elements.error.style.display = 'none';
+  elements.loading.style.display = 'block';
+}
+
+function hideLoading() {
+  elements.loading.style.display = 'none';
+}
+
+function showError(message) {
+  hideLoading();
+  elements.error.textContent = String.fromCodePoint(0x274C) + ' ' + message;
+  elements.error.style.display = 'block';
+  setTimeout(() => elements.error.style.display = 'none', 5000);
+}
+
+function showWeather() {
+  hideLoading();
+  elements.emptyState.style.display = 'none';
+  elements.weatherDisplay.classList.add('visible');
+}
+
+function addToHistory(city) {
+  const cityName = city.trim().toLowerCase();
+  state.history = state.history.filter(c => c.toLowerCase() !== cityName);
+  state.history.unshift(city.trim());
+  state.history = state.history.slice(0, 5);
+  localStorage.setItem('history', JSON.stringify(state.history));
+  renderHistory();
+}
+
+function renderHistory() {
+  elements.historial.innerHTML = state.history
+    .map(city => '<span class="chip" data-city="' + city + '">' + city + '</span>')
+    .join('');
+}
+
+function formatDate() {
+  const options = { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' };
+  return new Date().toLocaleDateString('es-ES', options);
+}
+
+function formatTime(timestamp, timezone) {
+  const date = new Date((timestamp + timezone) * 1000);
+  return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+}
+
+function getWeatherEmoji(code) {
+  const emojis = {
+    '01d': String.fromCodePoint(0x2600, 0xFE0F), '01n': String.fromCodePoint(0x1F319),
+    '02d': String.fromCodePoint(0x26C5), '02n': String.fromCodePoint(0x2601, 0xFE0F),
+    '03d': String.fromCodePoint(0x2601, 0xFE0F), '03n': String.fromCodePoint(0x2601, 0xFE0F),
+    '04d': String.fromCodePoint(0x2601, 0xFE0F), '04n': String.fromCodePoint(0x2601, 0xFE0F),
+    '09d': String.fromCodePoint(0x1F327, 0xFE0F), '09n': String.fromCodePoint(0x1F327, 0xFE0F),
+    '10d': String.fromCodePoint(0x1F326, 0xFE0F), '10n': String.fromCodePoint(0x1F327, 0xFE0F),
+    '11d': String.fromCodePoint(0x26C8, 0xFE0F), '11n': String.fromCodePoint(0x26C8, 0xFE0F),
+    '13d': String.fromCodePoint(0x2744, 0xFE0F), '13n': String.fromCodePoint(0x2744, 0xFE0F),
+    '50d': String.fromCodePoint(0x1F32B, 0xFE0F), '50n': String.fromCodePoint(0x1F32B, 0xFE0F)
+  };
+  return emojis[code] || String.fromCodePoint(0x1F324, 0xFE0F);
+}
+
+async function fetchWeather(city) {
+  showLoading();
+  try {
+    const url = API_BASE + '/weather?q=' + encodeURIComponent(city) + '&units=' + state.unit + '&lang=es&appid=' + API_KEY;
+    const response = await fetch(url);
+    if (!response.ok) {
+      if (response.status === 404) throw new Error('Ciudad no encontrada.');
+      throw new Error('Error al obtener datos del clima.');
     }
-};
+    const data = await response.json();
+    state.lastData = data;
+    addToHistory(data.name);
+    displayWeather(data);
+    fetchForecast(data.coord.lat, data.coord.lon);
+  } catch (error) {
+    showError(error.message);
+  }
+}
 
-// --- 3. UI de Carga (Skeletons de 3 Columnas) ---
-const mostrarLoading = () => {
-    divWrapper.innerHTML = `
-        <div class="dashboard-pro animacion-aparecer">
-            <div class="panel-glass panel-principal">
-                <div class="skeleton skeleton-title"></div>
-                <div class="skeleton skeleton-img"></div>
-                <div class="skeleton skeleton-title"></div>
-            </div>
-            <div class="panel-glass">
-                <div class="skeleton skeleton-title"></div>
-                <div class="skeleton skeleton-text"></div>
-                <div class="skeleton skeleton-text"></div>
-            </div>
-            <div class="panel-glass">
-                <div class="skeleton skeleton-title"></div>
-                <div class="skeleton skeleton-text"></div>
-            </div>
-        </div>
-    `;
-};
+async function fetchWeatherByCoords(lat, lon) {
+  showLoading();
+  try {
+    const url = API_BASE + '/weather?lat=' + lat + '&lon=' + lon + '&units=' + state.unit + '&lang=es&appid=' + API_KEY;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Error al obtener datos del clima.');
+    const data = await response.json();
+    state.lastData = data;
+    addToHistory(data.name);
+    displayWeather(data);
+    fetchForecast(lat, lon);
+  } catch (error) {
+    showError(error.message);
+  }
+}
 
-// --- 4. Renderizado Final (3 Columnas Pro) ---
-const mostrarClimaReal = (data) => {
-    const { name, main: { temp, feels_like, humidity }, weather, wind: { speed } } = data;
-    const icono = `https://openweathermap.org/img/wn/${weather[0].icon}@2x.png`;
-    const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+async function fetchForecast(lat, lon) {
+  try {
+    const url = API_BASE + '/forecast?lat=' + lat + '&lon=' + lon + '&units=' + state.unit + '&lang=es&appid=' + API_KEY;
+    const response = await fetch(url);
+    if (!response.ok) return;
+    const data = await response.json();
+    displayForecast(data);
+  } catch (error) {
+    console.error('Error al cargar pronostico:', error);
+  }
+}
 
-    // Mock del pronóstico para la 3ra columna
-    const diasSimulados = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue'];
-    const pronosticoHTML = diasSimulados.map((dia, index) => {
-        const altura = 40 + (index * 12); // Animación visual de las barras
-        return `
-            <div class="dia-item">
-                <strong>${dia}</strong>
-                <span style="font-size: 1.2rem; margin: 5px 0;">☀️</span>
-                <strong>${temp + 2}°</strong>
-                <div class="barra-fondo" style="height: 60px; width: 8px; background: rgba(128,128,128,0.2); border-radius: 10px; display: flex; align-items: flex-end; margin-top: 5px;">
-                    <div class="barra-llena" style="width: 100%; height: ${altura}%; background: linear-gradient(to top, #007BFF, #00f2fe); border-radius: 10px;"></div>
-                </div>
-            </div>
-        `;
-    }).join('');
+function displayWeather(data) {
+  const { name, sys, main, weather, wind, visibility: vis, timezone } = data;
+  const unitSymbol = state.unit === 'metric' ? String.fromCodePoint(0x00B0) + 'C' : String.fromCodePoint(0x00B0) + 'F';
+  const speedUnit = state.unit === 'metric' ? 'km/h' : 'mph';
+  const windSpeed = state.unit === 'metric' ? (wind.speed * 3.6).toFixed(1) : wind.speed.toFixed(1);
+  
+  elements.location.textContent = name + ', ' + sys.country;
+  elements.date.textContent = formatDate();
+  elements.weatherIcon.src = 'https://openweathermap.org/img/wn/' + weather[0].icon + '@4x.png';
+  elements.weatherIcon.alt = weather[0].description;
+  elements.temp.innerHTML = Math.round(main.temp) + '<span class="unit">' + unitSymbol + '</span>';
+  elements.description.textContent = weather[0].description;
+  elements.feelsLike.textContent = 'Sensacion termica: ' + Math.round(main.feels_like) + unitSymbol;
+  elements.humidity.textContent = main.humidity + '%';
+  elements.wind.textContent = windSpeed + ' ' + speedUnit;
+  elements.visibility.textContent = (vis / 1000).toFixed(1) + ' km';
+  elements.pressure.textContent = main.pressure + ' hPa';
+  elements.sunrise.textContent = formatTime(sys.sunrise, timezone);
+  elements.sunset.textContent = formatTime(sys.sunset, timezone);
+  showWeather();
+}
 
-    // Inyectamos la estructura asegurando que los estilos no se rompan
-    divWrapper.innerHTML = `
-        <div class="animacion-aparecer dashboard-pro">
-            
-            <div class="panel-glass panel-principal">
-                <h3>${name}</h3>
-                <p style="font-size: 0.8rem; opacity: 0.7;">🕒 Actualizado: ${hora}</p>
-                <div class="temp-gigante" style="font-size: 3.5rem; font-weight: bold; color: #007BFF; margin: 15px 0;">${temp}°C</div>
-                <img src="${icono}" alt="Icono" style="width: 100px;">
-                <p class="descripcion" style="text-transform: capitalize; font-weight: bold;">${weather[0].description}</p>
-            </div>
-
-            <div class="panel-glass">
-                <h4 style="border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 10px; margin-bottom: 15px; text-align: left;">Detalles para hoy</h4>
-                <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 15px;">
-                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 8px;">
-                        <span style="opacity: 0.8;">Sensación Real</span> <strong>${feels_like}°C</strong>
-                    </li>
-                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 8px;">
-                        <span style="opacity: 0.8;">Humedad</span> <strong>${humidity}%</strong>
-                    </li>
-                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 8px;">
-                        <span style="opacity: 0.8;">Vientos</span> <strong>${speed} km/h</strong>
-                    </li>
-                    <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(128,128,128,0.1); padding-bottom: 8px;">
-                        <span style="opacity: 0.8;">Precipitación</span> <strong>0 mm</strong>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="panel-glass">
-                <h4 style="border-bottom: 1px solid rgba(128,128,128,0.2); padding-bottom: 10px; margin-bottom: 15px; text-align: left;">Próximos días</h4>
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; height: 100%; margin-top: 10px;">
-                    ${pronosticoHTML}
-                </div>
-            </div>
-
-        </div>
-    `;
-};
-
-// --- 5. Lógica de Búsqueda (API Mock) ---
-const ejecutarBusqueda = (busqueda) => {
-    mostrarLoading();
-    setTimeout(() => {
-        const nombre = typeof busqueda === 'string' ? busqueda : "Ubicación GPS";
-        if(typeof busqueda === 'string') guardarHistorial(busqueda);
-        
-        // Datos falsos
-        const mock = {
-            name: nombre,
-            main: { temp: 16, feels_like: 22, humidity: 60 },
-            weather: [{ main: 'Clouds', description: 'nubes dispersas', icon: '02d' }],
-            wind: { speed: 12 }
-        };
-        mostrarClimaReal(mock);
-    }, 1200);
-};
-
-// --- 6. Eventos ---
-btnBuscar.onclick = () => { if(inputCiudad.value) ejecutarBusqueda(inputCiudad.value); };
-
-btnGps.onclick = () => {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (pos) => ejecutarBusqueda({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
-            () => alert("Error al obtener ubicación")
-        );
+function displayForecast(data) {
+  const dailyData = {};
+  data.list.forEach(item => {
+    const date = new Date(item.dt * 1000).toLocaleDateString('es-ES', { weekday: 'short' });
+    if (!dailyData[date]) {
+      dailyData[date] = { temps: [], icon: item.weather[0].icon };
     }
-};
+    dailyData[date].temps.push(item.main.temp);
+  });
+  
+  const days = Object.entries(dailyData).slice(0, 5);
+  const unitSymbol = state.unit === 'metric' ? String.fromCodePoint(0x00B0) : String.fromCodePoint(0x00B0) + 'F';
+  
+  elements.forecast.innerHTML = days.map(function([day, info]) {
+    const maxTemp = Math.round(Math.max(...info.temps));
+    const minTemp = Math.round(Math.min(...info.temps));
+    return '<div class="forecast-day">' +
+      '<div class="forecast-day-name">' + day + '</div>' +
+      '<span class="forecast-day-icon">' + getWeatherEmoji(info.icon) + '</span>' +
+      '<div class="forecast-day-temp">' + maxTemp + unitSymbol +
+      ' <span class="forecast-day-temp-low">' + minTemp + unitSymbol + '</span></div></div>';
+  }).join('');
+}
 
-document.querySelectorAll('.scroll-link').forEach(link => {
-    link.onclick = (e) => {
-        e.preventDefault();
-        document.querySelector(link.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
-    };
-});
+function getLocation() {
+  if (!navigator.geolocation) {
+    showError('Tu navegador no soporta geolocalizacion.');
+    return;
+  }
+  showLoading();
+  navigator.geolocation.getCurrentPosition(
+    (position) => fetchWeatherByCoords(position.coords.latitude, position.coords.longitude),
+    (error) => {
+      let message = 'Error al obtener ubicacion.';
+      if (error.code === 1) message = 'Permiso de ubicacion denegado.';
+      if (error.code === 2) message = 'Ubicacion no disponible.';
+      if (error.code === 3) message = 'Tiempo de espera agotado.';
+      showError(message);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
 
-renderizarHistorial();
+function setupEventListeners() {
+  elements.btnBuscar.addEventListener('click', () => {
+    const city = elements.ciudad.value.trim();
+    if (city) fetchWeather(city);
+  });
+  
+  elements.ciudad.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const city = elements.ciudad.value.trim();
+      if (city) fetchWeather(city);
+    }
+  });
+  
+  elements.btnGps.addEventListener('click', getLocation);
+  elements.btnTheme.addEventListener('click', toggleTheme);
+  elements.btnUnit.addEventListener('click', toggleUnit);
+  
+  elements.historial.addEventListener('click', (e) => {
+    if (e.target.classList.contains('chip')) {
+      const city = e.target.dataset.city;
+      elements.ciudad.value = city;
+      fetchWeather(city);
+    }
+  });
+}
+
+init();
